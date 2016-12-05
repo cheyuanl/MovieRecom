@@ -1,122 +1,73 @@
 import numpy as np
 
-
-class user_model_lr():
-    """ Assume each user is a linear regression model. 
-        The weights are solved by least square. 
-        Input the pre-processed movie feature it will output rating.
-    """
-    def __init__(self, id):
-        self.id = id # user's id
-        self.w = None # user's weight
-
-    def train(self, X, y):
-        self.w = np.linalg.lstsq(X, y)[0]
-
-    def predict(self, X):
-        return X.dot(self.w)
-
-def process(df):
-    """ Pre-process the movie's attribute to vector of ['year', 'votes', 'runtimes']
-
+def process(df, idxToLenId, links, features = ['year', 'votes', 'runtimes']):
+    """ Pre-process the movie's attribute to vector of selected attributes
         Args: 
             df (dataframe) : dataframe of movie attributes
-            
         Returns: 
-            movie_feature_dict (dict): each key map to a moive feature vector.
+            V (numpy 2D array): the movie features
     """
-    def movieToVec(df):
-        vec = []
-        vec += [df['year'], df['votes'], df['runtimes']]
-        
-        return vec
+    links = links.set_index('movieId')
+    df = df.set_index('id')
+    # TODO: make it cleaner...
 
+    def movieToVec(series, features):        
+        return series[features].values.astype(float)
 
-    # Get a subset
-    df_movies_small = df[['year', 'votes', 'runtimes']]
+    def numeric_parser(x):
+        if str(x).rstrip(']').lstrip('[').split()[0].rstrip(',') == 'nan':
+            return np.nan
+        else:
+            return float(str(x).rstrip(']').lstrip('[').split()[0].rstrip(','))
 
+    # def list_parser(x):
+    #     print repr(x)
+    #     return x
+    
     # Clean up data
-    df_movies_small.loc[:,'year'] = map(parser, df_movies_small.loc[:,'year'])
-    df_movies_small.loc[:,'year'] = df_movies_small.loc[:,'year'].fillna(df_movies_small.loc[:,'year'].mean())
-    df_movies_small.loc[:,'votes'] = map(parser, df_movies_small.loc[:,'votes'])
-    df_movies_small.loc[:,'votes'] = df_movies_small.loc[:,'votes'].fillna(df_movies_small.loc[:,'votes'].mean())
-    df_movies_small.loc[:,'runtimes'] = map(parser, df_movies_small.loc[:,'runtimes'])
-    df_movies_small.loc[:,'runtimes'] = df_movies_small.loc[:,'runtimes'].fillna(df_movies_small.loc[:,'runtimes'].mean())
-    
+    df.loc[:,'year'] = map(numeric_parser, df.loc[:,'year'])
+    df.loc[:,'year'] = df.loc[:,'year'].fillna(df.loc[:,'year'].mean())
+    df.loc[:,'votes'] = map(numeric_parser, df.loc[:,'votes'])
+    df.loc[:,'votes'] = df.loc[:,'votes'].fillna(df.loc[:,'votes'].mean())
+    df.loc[:,'runtimes'] = map(numeric_parser, df.loc[:,'runtimes'])
+    df.loc[:,'runtimes'] = df.loc[:,'runtimes'].fillna(df.loc[:,'runtimes'].mean())
+    # df.loc[:,'genres'] =  map(list_parser, df.loc[:,'genres'])
 
-    movie_feature_dict = {}
-    for index, row in df_movies_small.iterrows():
-        imdbId = index
-        movie_feature_dict[imdbId] = movieToVec(row)
-        
-    return movie_feature_dict
-
-def parser(x):
-    if str(x).rstrip(']').lstrip('[').split()[0].rstrip(',') == 'nan':
-        return np.nan
-    else:
-        return float(str(x).rstrip(']').lstrip('[').split()[0].rstrip(','))
+    # genres = set(reduce(lambda x, y : x + y, df.loc[:,'genres']))
+    # genres = [i.split(',')[0] for i in genres if i != 'nan']
+    # print len(genres)
+    # print genres
 
     
-def train(X_tr,  movie_feature_dict, idxToImdbId):
+    idxToImdbId = [int(links.loc[i].imdbId) for i in idxToLenId]
+    return np.array([movieToVec(df.loc[idxToImdbId[i], :], features) for i in range(len(idxToLenId))])
+
+    
+def train(X_tr, V, lam = 1):
     """ Create and train the user models
         Args:
-            X_tr (numpy 2D array) : a ratings matrix for training
-            movie_feature_dict (dict) : a map to movie feature vector as the input of user_model
+            X_tr (numpy 2D array) : ratings matrix for training
+            V (numpy 2D array) : movie attribute vectors
         Returns: 
-            user_models (list) : a list of trained user_models
+            U (numpy 2D array) : the user parameters
     """
-    user_models = []
-    
+
+    U = np.zeros((X_tr.shape[0], V.shape[1]))
     for i, row in enumerate(X_tr):
-        u = user_model_lr(i)
-        X = np.array([movie_feature_dict[idxToImdbId[j]] for j in row.nonzero()[0]])
+        nzs = X_tr[i,:].nonzero()[0]
+        vv = V[nzs,:]        
 
         y = np.array([X_tr[i, j] for j in row.nonzero()[0]])
-        u.train(X, y)
-        user_models.append(u)
+        # U[i, :] = np.linalg.lstsq(vv, y)[0]
+        U[i,:] = np.linalg.inv(vv.T.dot(vv) + lam * np.eye(V.shape[1])).dot(vv.T.dot(X_tr[i,nzs]).T)
+
+    return U
 
 
-    return user_models
 
 
-def error(X, R):
-    """ Compute the mean error of the observed ratings in X and their estimated values. 
-        Args: 
-            X (numpy 2D array) : a ratings matrix as specified above
-            R (numpy 2D array) : reconstructed matrix
-        Returns: 
-            (float) : the mean squared error of the observed ratings with their estimated values
-        """
-    indicator = zip(X.nonzero()[0], X.nonzero()[1])
-    
-    error = 0.
-    for i, j  in indicator:
-        error += np.square(X[i,j] - R[i,j])
-        
-    error = error / float(np.count_nonzero(X))
-    
-    return error
 
 
-def reconstruct(user_models, movie_feature_dict, idxToImdbId):
-    """
-    Reconstruct the rating matrix based on trained user model
-    and movie feature.
-        Args:
-            user_models (list) : a list of user_model, where the parameter is trained
-            movie_feature_dict (dict) : a map to movie feature vector as the input of user_model
-            idxToImdbId (dict) : a map to from col index to imdbId
-        Returns:
-            X (numpy 2D array) : a reconstructed rating matrix
-    """
-    M = np.array([movie_feature_dict[idxToImdbId[j]] for j in range(len(idxToImdbId))])
-    X = np.zeros((len(user_models), M.shape[0]))
-    for i, u in enumerate(user_models):
-        for j, m in enumerate(M):
-            X[i, j] = u.predict(m)
-    
-    return X
 
 
 # # Make sure the test_idxToLenId is correct

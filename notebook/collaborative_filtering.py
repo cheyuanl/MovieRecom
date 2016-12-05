@@ -101,12 +101,16 @@ def train(X, X_te, k = 5, U = None, V = None, niters=51, lam=10, verbose=False):
             print "Iter: {:03d}\ttrain error: {:0.3f}\tTest error: {:0.4f}".format(i, error(X, U, V), error(X_te, U, V))
         
         for i in xrange(m):
-            vv = V[W[i,:].nonzero()[0],:]        
-            U[i,:] = np.linalg.inv(vv.T.dot(vv) + lam * np.eye(k)).dot(V.T.dot(X[i,:]).T)
+            nzs = W[i,:].nonzero()[0]
+            vv = V[nzs,:]        
+            # U[i,:] = np.linalg.inv(vv.T.dot(vv) + lam * np.eye(k)).dot(V.T.dot(X[i,:]).T)
+            U[i,:] = np.linalg.inv(vv.T.dot(vv) + lam * np.eye(k)).dot(vv.T.dot(X[i,nzs]).T)
         
         for j in xrange(n):
-            uu = U[W[:,j].nonzero()[0],:]
-            V[j,:] = np.linalg.inv(uu.T.dot(uu) + lam * np.eye(k)).dot(U.T.dot(X[:,j]))
+            nzs = W[:,j].nonzero()[0]
+            uu = U[nzs,:]
+            # V[j,:] = np.linalg.inv(uu.T.dot(uu) + lam * np.eye(k)).dot(U.T.dot(X[:,j]))
+            V[j,:] = np.linalg.inv(uu.T.dot(uu) + lam * np.eye(k)).dot(uu.T.dot(X[nzs,j]))
         
 
     return U, V
