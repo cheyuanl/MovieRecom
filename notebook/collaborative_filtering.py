@@ -98,9 +98,7 @@ def train(X, X_te, k = 5, U = None, V = None, niters=51, lam=10, verbose=False):
     for i, j in indicator:
         W[i,j] = 1
         
-    for i in xrange(niters):
-        if verbose and (i % 5 == 0):
-            print "Iter: {:03d}\ttrain error: {:0.3f}\tTest error: {:0.4f}".format(i, error(X, U, V), error(X_te, U, V))
+    for it in xrange(niters):
         
         for i in xrange(m):
             nzs = W[i,:].nonzero()[0]
@@ -113,6 +111,8 @@ def train(X, X_te, k = 5, U = None, V = None, niters=51, lam=10, verbose=False):
             uu = U[nzs,:]
             # V[j,:] = np.linalg.inv(uu.T.dot(uu) + lam * np.eye(k)).dot(U.T.dot(X[:,j]))
             V[j,:] = np.linalg.inv(uu.T.dot(uu) + lam * np.eye(k)).dot(uu.T.dot(X[nzs,j]))
+        if verbose and (it % 5 == 0):
+            print "Iter: {:03d}\ttrain error: {:0.3f}\tTest error: {:0.4f}".format(it, error(X, U, V), error(X_te, U, V))
         
 
     return U, V
