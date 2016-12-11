@@ -8,7 +8,7 @@ def process(df, idxToLenId, links, features = ['year', 'votes', 'runtimes']):
             V (numpy 2D array): the movie features
     """
     links = links.set_index('movieId')
-    df = df.set_index('id')
+    df = df.set_index('imdbId')
     # TODO: make it cleaner...
 
     def movieToVec(series, features):        
@@ -40,7 +40,7 @@ def process(df, idxToLenId, links, features = ['year', 'votes', 'runtimes']):
 
     
     idxToImdbId = [int(links.loc[i].imdbId) for i in idxToLenId]
-    return np.array([movieToVec(df.loc[idxToImdbId[i], :], features) for i in range(len(idxToLenId))])
+    return np.array([movieToVec(df.loc[idxToImdbId[i], :], features) for i in range(len(idxToLenId))]), idxToImdbId
 
     
 def train(X_tr, V, lam = 1):
