@@ -12,7 +12,7 @@ def process(df, idxToLenId, links, features = ['year', 'votes', 'runtimes']):
     # TODO: make it cleaner...
 
     def movieToVec(series, features):        
-        return series[features].values.astype(float)
+        return np.append(series[features].values.astype(float), 1.) ## 1 is the bias term
 
     def numeric_parser(x):
         if str(x).rstrip(']').lstrip('[').split()[0].rstrip(',') == 'nan':

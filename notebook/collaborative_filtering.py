@@ -47,9 +47,11 @@ def process(ratings, movies, P):
     movie_names = [''] * len(movieIdToIndex)
     for movieId in table:
         movie_names[movieIdToIndex[movieId]] = movies.loc[movies['movieId'] == movieId]['title'].values[0]
+
+    idxToUserId = range(1, num_user+1)
         
     
-    return X_tr, X_te, movie_names, idxToLenId
+    return X_tr, X_te, movie_names, idxToUserId, idxToLenId
 
 def error(X, U, V):
     """ Compute the mean error of the observed ratings in X and their estimated values. 
