@@ -1,27 +1,23 @@
 # MovieRecom
 
-####About
-This is a notebook that covers different techniques to build movie recommendation systems while attempting to highlight core differences and find the one with best performance.
 
-####Author
+This notebook covers different techniques to build movie recommendation systems while attempting to highlight core differences and find the one with best performance.
+
+##Author
 Anmol Jain<br>
 Che-Yuan Liang<br>
 Malvin De Nunez Estevez
 
-####NBViewer link 
+##NBViewer link 
 The offline mode [link](https://nbviewer.jupyter.org/github/cheyuanl/MovieRecom/blob/master/final/)
 
 
-####How to run the code
+##How to run the code
 1. Download “data” file from the [link](https://drive.google.com/open?id=0B8lfchtrKaRLMlBWMmJzd0gzR2c). Make sure it is saved as “data” folder.
 2. Store the data file in the same folder as the MovieRecom_FinalReport.ipynb 
 3. You might need to install the following package:
    pyFM using- pip install git+https://github.com/coreylynch/pyFM
 4. Open the MovieRecom_FinalReport.ipynb and run it cell by cell
-
-
-####Link to data file
-[link](https://drive.google.com/open?id=0B8lfchtrKaRLMlBWMmJzd0gzR2c) (You can download it only by using andrew.cmu.edu id)
 
 
 ####References
