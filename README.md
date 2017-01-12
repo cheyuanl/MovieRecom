@@ -15,8 +15,9 @@ The offline mode [link](https://nbviewer.jupyter.org/github/cheyuanl/MovieRecom/
 ##How to run the code
 1. Download “data” file from the [link](https://drive.google.com/open?id=0B8lfchtrKaRLMlBWMmJzd0gzR2c). Make sure it is saved as “data” folder.
 2. Store the data file in the same folder as the MovieRecom_FinalReport.ipynb 
-3. You might need to install the following package:
-   pyFM using- pip install git+https://github.com/coreylynch/pyFM
+3. You might need to install the following pyFM 
+
+   		pip install git+https://github.com/coreylynch/pyFM
 4. Open the MovieRecom_FinalReport.ipynb and run it cell by cell
 
 
