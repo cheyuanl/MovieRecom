@@ -9,7 +9,7 @@ Che-Yuan Liang<br>
 Malvin De Nunez Estevez
 
 ##NBViewer link 
-The offline mode [link](https://nbviewer.jupyter.org/github/cheyuanl/MovieRecom/blob/master/final/)
+offline reading mode [link](https://nbviewer.jupyter.org/github/cheyuanl/MovieRecom/blob/master/MovieRecom_FinalReport.ipynb)
 
 
 ##How to run the code
